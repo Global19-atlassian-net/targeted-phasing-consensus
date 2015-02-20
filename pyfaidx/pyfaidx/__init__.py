@@ -6,8 +6,16 @@ Fasta file -> Faidx -> Fasta -> FastaRecord -> Sequence
 
 from __future__ import division
 import os
-from six import PY2, PY3, string_types
-from six.moves import zip_longest
+
+# Remove six dependency and assume python 2.7
+#from six import PY2, PY3, string_types
+PY2 = True
+PY3 = False
+string_types = basestring,
+
+#from six.moves import zip_longest
+from itertools import izip_longest as zip_longest
+
 try:
     from collections import OrderedDict
 except ImportError: #python 2.6

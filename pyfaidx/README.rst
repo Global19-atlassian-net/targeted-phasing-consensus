@@ -1,4 +1,7 @@
-|Travis| |PyPI| |Landscape| |Coveralls|
+Note
+----
+
+This is a modified version of pyfaidx to be run with the phasing workflow script. See https://github.com/mdshw5/pyfaidx for the latest code.
 
 Description
 -----------
