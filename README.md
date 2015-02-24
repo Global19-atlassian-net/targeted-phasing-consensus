@@ -1,3 +1,5 @@
+![Visualizing phasing in IGV](images/HLA-DQA1-phased-pacbio-reads.png)
+
 targeted-phasing-consensus.sh
 -------------------------
 
