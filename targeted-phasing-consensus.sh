@@ -88,4 +88,5 @@ done
 
 # Use nucmer to show snp differences between the two phases
 nucmer consensus0.fasta consensus1.fasta
-show-snps -C -x 10 out.delta > nucmer.snps
+#show-snps -C -x 10 out.delta > nucmer.snps
+# show-snps is part of the Mummer package: http://mummer.sourceforge.net/
