@@ -1,6 +1,6 @@
 ![Visualizing phasing in IGV](images/HLA-DQA1-phased-pacbio-reads.png)
 
-targeted-phasing-consensus.sh
+targeted-phasing-consensus.sh - RSII and SMRT Analysis 2.3.0
 -------------------------
 
 The ``targeted-phasing-consensus.sh`` script runs phasing on a subset of aligned PacBio Reads of Insert (CCS reads) corresponding to a gene or region of interest, and generates a Quiver-based consensus sequence for each phase.
