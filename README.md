@@ -1,6 +1,6 @@
 ![Visualizing phasing in IGV](images/HLA-DQA1-phased-pacbio-reads.png)
 
-# targeted-sequel-phasing.sh - SEQUEL and SMRT Link >4.0
+# targeted-sequel-phasing.sh - Sequel and SMRT Link >4.0
 -------------------------
 
 The ``targeted-sequel-phasing.sh`` script phases, aligns, and generates phased consensus sequences for CCS reads in a given region of interest.
