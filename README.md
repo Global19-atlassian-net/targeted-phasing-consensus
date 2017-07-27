@@ -11,8 +11,8 @@ The ``targeted-sequel-phasing.sh`` script phases, aligns, and generates phased c
 Download these two files into the same directory:
 
 ```sh
-% wget https://github.com/lhon/targeted-phasing-consensus/raw/master/targeted-sequel-phasing.sh
-% wget https://github.com/lhon/targeted-phasing-consensus/raw/master/faidx.zip
+% wget https://raw.githubusercontent.com/PacificBiosciences/targeted-phasing-consensus/master/targeted-sequel-phasing.sh
+% wget https://raw.githubusercontent.com/PacificBiosciences/targeted-phasing-consensus/master/faidx.zip
 ```
 
 Running `targeted-sequel-phasing.sh` requires having [SMRT Link >4.0](http://pacbiodevnet.com) installed.
