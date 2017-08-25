@@ -1,3 +1,6 @@
+# targeted-sequel-phasing.sh - Sequel and SMRT Link >4.0
+-------------------------
+
 ## `capture2target.py PROBE.BED FRAG_SIZE`
 ```
 Generates a bed file containing target regions based on probe positions.  A target region is defined as a
@@ -28,17 +31,36 @@ Generate a bed file describing the haplotype blocks determined during phasing.
 PHASEOUT - phase.out file created by samtools phase step
 ```
 
+## Installing
+----------
+Clone with git.
 
+## Running
+----------
+```sh
+# add folder to path
+cd targeted-phasing-consensus
+export PATH=$PWD:$PATH
 
+# define some variables to make this easier to read
+CCSBAM = /path/to/your/mapped/ccs.bam
+SUBREADSBAM = /path/to/your/subreads.bam  # prefer aligned subreads with reseq
+SUBREADSALIGNED = True                    # or False
+REF = /path/to/reference/genome           # with indices
 
+# produce a bed file named capture_probes.bed.targets with the target regions of interest
+capture2target.py capture_probes.bed
 
+# generate shell scripts to phase each region of interest
+generate_jobs.py ./capture_probes.bed.targets $CCSBAM $SUBREADSBAM $SUBREADSALIGNED $REF
 
+# if running locally without a cluster
+NUM_CORES = 8 # set this to the number of concurrent jobs
+parallel -j $NUMCORES 'bash {} > {}.out' ::: phase_*.sh
 
-
-
-
-
-
+# if running on a cluster, edit QSUB_HEADER in generate_jobs.py with whatever you need, and
+parallel 'qsub {}' ::: phase_*.sh
+```
 
 
 
