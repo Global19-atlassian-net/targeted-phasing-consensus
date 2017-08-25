@@ -1,3 +1,47 @@
+## `capture2target.py PROBE.BED FRAG_SIZE`
+```
+Generates a bed file containing target regions based on probe positions.  A target region is defined as a
+the region from (PROBE START - FRAG SIZE) to (PROBE END + FRAG SIZE).  If two probes are separated by
+<= 2 * FRAG SIZE, these are consolidated into on region.
+
+PROBE.BED - bed file describing probe coordinates
+FRAG_SIZE - mean fragment size, used to determine the largest regions that could be phased
+```
+
+## `generate_jobs.py TARGETBED CCSBAM SUBREADSBAM SUBREADSALIGNED_BOOL REFERENCE`
+```
+Generates a shell script for each region of interest in the bed file.  These scripts can be submitted to
+a job management system like sge or slurm, or executed locally using GNU parallel or something similar.
+
+TARGET.BED - regions of interest, either hand-created or created from probe bed file using capture2target.py
+CCSBAM - mapped CCS
+SUBREADSBAM - SUBREADS
+SUBREADSALIGNED_BOOL - True if SUBREADSBAM is aligned.  Otherwise False.  If False, extra time will
+	be required for subread alignment after phasing.
+REFERENCE - reference fasta (indexed by samtools)
+```
+
+## `phaseout2bed.py PHASEOUT`
+```
+Generate a bed file describing the haplotype blocks determined during phasing.
+
+PHASEOUT - phase.out file created by samtools phase step
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ![Visualizing phasing in IGV](images/HLA-DQA1-phased-pacbio-reads.png)
 
 # targeted-sequel-phasing.sh - Sequel and SMRT Link >4.0

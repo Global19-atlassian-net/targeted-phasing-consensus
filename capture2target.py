@@ -25,7 +25,7 @@ def sanitize(filename):
 
     adapted from https://stackoverflow.com/a/7406369
     """
-    keepcharacters = (' ', '.', '_')
+    keepcharacters = ('.', '_')
     return "".join(c if (c.isalnum() or c in keepcharacters) else '_' for c in filename).rstrip()
 
 
