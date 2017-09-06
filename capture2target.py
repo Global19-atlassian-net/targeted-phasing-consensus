@@ -1,13 +1,15 @@
 #!/usr/bin/env python
-"""
-Create bed file of phaseable blocks.
+"""capture2target.py PROBEBED FRAG_SIZE
 
-Step through a probe bed file and join adjacent features (probes) closer than
-a given fragment length.  This should yield a new bed file
-(CAPTURE.BED.targets) of all features that could feasibly be joined by
-phasing.
+Generates a BED file containing target regions based on probe positions.
+A target region is defined as the region from (PROBE START - FRAG SIZE)
+to (PROBE END + FRAG SIZE).  If two probes are separated by <= 2 * FRAG SIZE,
+these are consolidated into on region.
 
-USAGE: python capture2target.py CAPTURE.BED FRAGMENT_LENGTH
+PROBEBED - BED file describing probe coordinates
+FRAG_SIZE - mean fragment size determined in sample prep.  This is used to
+            determine the largest regions that could be phased.
+            We currently recommend a mean fragment size of 2kbp to 6kbp.
 """
 
 import sys
@@ -15,46 +17,52 @@ import csv
 from operator import itemgetter
 
 
-capture_bed = sys.argv[1]
-fragment = int(sys.argv[2])
-
-
 def sanitize(filename):
     """
     Sanitize string for use in filename, since they may be used downstream.
 
-    adapted from https://stackoverflow.com/a/7406369
+    adapted from <https://stackoverflow.com/a/7406369>
     """
-    keepcharacters = ('.', '_')
-    return "".join(c if (c.isalnum() or c in keepcharacters) else '_' for c in filename).rstrip()
+    keepcharacters = ('_', '-')
+    return ''.join(c if (c.isalnum() or c in keepcharacters) else '_' for c in filename).rstrip()
 
 
-targets = list()
+def main():
+    capture_bed = sys.argv[1]
+    fragment = int(sys.argv[2])
 
-with open(capture_bed, 'r') as capture_list:
-    capture_reader = csv.reader(capture_list, delimiter='\t')
-    all_lines = [[w, int(x), int(y), z] for w, x, y, z in capture_reader]
-    all_lines = sorted(all_lines, key=itemgetter(0, 1))
-    for line in all_lines:
-        (chrom, start, end, etc) = line
-        # combine features closer than 2 * fragment
-        if targets and \
-           targets[-1][0] == chrom and \
-           start - targets[-1][2] <= 2 * fragment:
-            old = targets.pop()
-            targets.append([old[0], old[1], end, old[3]])
-        else:
-            targets.append([chrom, start, end, etc])
+    targets = list()
 
-for target in targets:
-    # add butffer of fragment to each end of a feature
-    if target[1] >= fragment:
-        target[1] -= fragment
-    target[2] += fragment  # TODO: incorporate chromosome sizes to avoid edge case
-    # sanitize the feature name, since it may be used in a filename
-    target[3] = sanitize(target[3])
+    with open(capture_bed, 'r') as capture_list:
+        capture_reader = csv.reader(capture_list, delimiter='\t')
+        all_rows = [[w, int(x), int(y), z] for w, x, y, z in capture_reader]
+        all_rows = sorted(all_rows, key=itemgetter(0, 1))
+        for row in all_rows:
+            (chrom, start, end, etc) = row
+            # combine features closer than 2 * fragment
+            if targets and \
+               targets[-1][0] == chrom and \
+               start - targets[-1][2] <= 2 * fragment:
+                old = targets.pop()
+                targets.append([old[0], old[1], end, old[3]])
+            else:
+                targets.append([chrom, start, end, etc])
 
-with open(capture_bed + '.targets', 'w') as target_list:
     for target in targets:
-        target_list.write('\t'.join([str(x) for x in target]))
-        target_list.write('\n')
+        # add buffer of fragment to each end of a feature
+        # start
+        if target[1] >= fragment:
+            target[1] -= fragment
+        # end
+        target[2] += fragment  # TODO: incorporate chromosome sizes to avoid edge case
+        # santized name
+        target[3] = sanitize(target[3])
+
+    with open(capture_bed + '.targets', 'w') as target_list:
+        for target in targets:
+            target_list.write('\t'.join([str(x) for x in target]))
+            target_list.write('\n')
+
+
+if __name__ == '__main__':
+    main()
