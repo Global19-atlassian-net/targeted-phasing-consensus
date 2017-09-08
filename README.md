@@ -50,6 +50,10 @@ Within a given region of interest, the general workflow of the `targeted-sequel-
 # add script folder to path
 cd targeted-phasing-consensus
 export PATH=$PWD:$PATH
+# ensure that samtools and arrow are in your path
+samtools --version  # should report >= 1.3.1
+bedtools --version  # should report >= 2.25
+arrow --version     # should report >= 2.2.0
 
 # create a working directory and change into it, e.g.
 mkdir ~/phased_data
@@ -86,6 +90,7 @@ cd targeted-phasing-consensus
 export PATH=$PWD:$PATH
 # ensure that samtools and arrow are in your path
 samtools --version  # should report >= 1.3.1
+bedtools --version  # should report >= 2.25
 arrow --version     # should report >= 2.2.0
 
 # create a working directory and change into it, e.g.
