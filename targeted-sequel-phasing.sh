@@ -34,11 +34,12 @@ if [ -z "${cov}" ]
 then
 	echo "no reads mapped to this target region"
 	exit 0
+else
+	echo "original subset.bam has ${cov} mean coverage"
 fi
 if [ "${cov}" -gt "${MAX_COVERAGE}" ]
 then
 	downsample=`echo "${MAX_COVERAGE}/${cov}" | bc -l`
-	echo "original subset.bam has ${cov} mean coverage"
 	echo "downsampling to ~${MAX_COVERAGE}"
 	samtools view -b -s 1${downsample} subset.bam > downsampled.bam
 	mv downsampled.bam subset.bam
