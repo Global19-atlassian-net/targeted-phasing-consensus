@@ -25,12 +25,12 @@ Clone with git.  Ensure that you have all of the dependencies available in your 
 In order to phase reads using these scripts, you will need:
 - a reference genome: If you have a SMRT Link installation, you can point to the path of the .fasta or .fa file.  If not, you will need to download or create a reference and run [`samtools faidx`](http://www.htslib.org/doc/samtools-1.3.1.html "Samtools Documentation")` /path/to/reference/fasta` to build a genome index.
 - a consolidated<sup id="a2">[2](#f2)</sup> CCS BAM with reads aligned to reference genome:  This can be created with a SMRT Link "CCS Mapping" job.  We have had success with the default settings:
-	- Minimum Number of Passes: 3
-	- Minimum Predicted Accuracy: 0.9
+    - Minimum Number of Passes: 3
+    - Minimum Predicted Accuracy: 0.9
 - an consolidated<sup>[2](#f2)</sup> subreads BAM with reads aligned to reference genome:  This can be created with a SMRT Link "Resequencing" job.  We have had success with the default settings.
 - a BED file describing either of the following:
-	- the target regions you wish to phase, or
-	- the positions of the probes.  If you choose this option, `capture2target.py` can be used to generate a target region BED file.
+    - the target regions you wish to phase, or
+    - the positions of the probes.  If you choose this option, `capture2target.py` can be used to generate a target region BED file.
 
 
 ## Tutorial:
@@ -40,9 +40,9 @@ Within a given region of interest, the general workflow of the `targeted-sequel-
 2. Phase the CCS reads in this region using [`samtools phase`](http://www.htslib.org/doc/samtools-1.3.1.html "Samtools Documentation").
 3. Generate a BED file describing the phased haplotype blocks within the region of interest.
 4. For each phase:
-	1. Generate a list of ZMWs in the phased CCS bam.
-	2. Filter aligned subreads using ZMW list to generate aligned subread bam.
-	3. Generate consensus fasta and vcf from aligned subreads using `arrow`.
+    1. Generate a list of ZMWs in the phased CCS bam.
+    2. Filter aligned subreads using ZMW list to generate aligned subread bam.
+    3. Generate consensus fasta and vcf from aligned subreads using `arrow`.
 
 ```sh
 # in this example, we will be phasing the a region around the BIN1 locus in hg38
@@ -58,8 +58,8 @@ cd ~/phased_data
 CCSBAM=/path/to/your/mapped/ccs.bam     # ccs reads must be aligned to reference
 SUBREADSBAM=/path/to/your/subreads.bam  # subreads must be aligned to reference
 REFERENCE=/path/to/reference/fasta      # with indices
-ROINAME=BIN1		                    # this shouldn't contain any punctuation other than underscore or dash
-CHROM=chr1								# define $CHROM, $START, and $END as if you would be passing them to samtools
+ROINAME=BIN1                            # this shouldn't contain any punctuation other than underscore or dash
+CHROM=chr1                              # define $CHROM, $START, and $END as if you would be passing them to samtools
 START=127042513
 END=127113327
 
@@ -70,12 +70,12 @@ targeted-sequel-phasing.sh $CCSBAM $SUBREADSBAM $ROINAME $CHROM $START $END $REF
 ### Phasing multiple target regions.
 With the included `capture2target.py` and `generate_jobs.py` scripts, you can phase all regions for a set of probes at once.  The general workflow is:
 1. Generate a BED file of target regions that you would like to phase by either:
-	1. manually creating a tab-delimited BED file containing:
-		- column 1:	chromosome for region of interest (ex. `chr1`)
-		- column 2: starting position for region of interest(ex. `127042513`)
-		- column 3: ending position for region of interest (ex. `127113327`)
-		- column 4: region name, without any spaces or punctuation other than underscores and dashes (ex. `BIN1`)
-	2. passing your probe set BED file through the included `capture2target.py` script.  This will join probes that are separated by fewer bases than twice the fragment size, and add a buffer to the end of each region to capture all of the reads mapping to the region.
+    1. manually creating a tab-delimited BED file containing:
+        - column 1: chromosome for region of interest (ex. `chr1`)
+        - column 2: starting position for region of interest(ex. `127042513`)
+        - column 3: ending position for region of interest (ex. `127113327`)
+        - column 4: region name, without any spaces or punctuation other than underscores and dashes (ex. `BIN1`)
+    2. passing your probe set BED file through the included `capture2target.py` script.  This will join probes that are separated by fewer bases than twice the fragment size, and add a buffer to the end of each region to capture all of the reads mapping to the region.
 2. Call `generate_jobs.py` to generate a shell script for each entry in the target region BED file.  If you intend to run these jobs on a cluster, you may need to edit the `CLUSTER` and `CLUSTER_HEADER` variables in `generate_jobs.py` before executing.
 3. Run the scripts generated in step 2.  These can be run locally (using `parallel` or a `for` loop for convenience) or submitted to your cluster.  Each of these scripts follows the workflow above for phasing a single target region.  If you save these shell scripts, they can be run again in the future to regenerate the data.
 
@@ -95,7 +95,7 @@ cd ~/phased_data
 CCSBAM=/path/to/your/mapped/ccs.bam     # ccs reads must be aligned to reference
 SUBREADSBAM=/path/to/your/subreads.bam  # subreads must be aligned to reference
 REFERENCE=/path/to/reference/fasta      # with indices
-FRAG_SIZE=6000							# determined by mean fragment size during prep; 2kbp to 6kbp recommended
+FRAG_SIZE=6000                          # determined by mean fragment size during prep; 2kbp to 6kbp recommended
 
 # produce a BED file named capture_probes.bed.targets with the target regions of interest
 capture2target.py capture_probes.bed $FRAG_SIZE
@@ -106,13 +106,13 @@ generate_jobs.py ./capture_probes.bed.targets $CCSBAM $SUBREADSBAM $REF
 
 # CHOOSE ONE OF THE TWO FOLLOWING OPTIONS:
 
-	# 1) if running locally without a cluster you can launch all of the jobs from parallel
-	# parallel will manage the number of jobs running concurrently if you provide the '-j NUMBER` argument:
-	NUM_CORES=8 # set this to the number of concurrent jobs
-	parallel -j $NUM_CORES 'bash {} > {}.out' ::: phase_*.sh
+    # 1) if running locally without a cluster you can launch all of the jobs from parallel
+    # parallel will manage the number of jobs running concurrently if you provide the '-j NUMBER` argument:
+    NUM_CORES=8 # set this to the number of concurrent jobs
+    parallel -j $NUM_CORES 'bash {} > {}.out' ::: phase_*.sh
 
-	# 2) if running on a cluster, edit QSUB_HEADER in generate_jobs.py with whatever you need, and start them with parallel or a loop:
-	parallel 'qsub {}' ::: phase_*.sh
+    # 2) if running on a cluster, edit QSUB_HEADER in generate_jobs.py with whatever you need, and start them with parallel or a loop:
+    parallel 'qsub {}' ::: phase_*.sh
 ```
 
 ## Output:
