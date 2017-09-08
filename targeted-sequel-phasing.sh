@@ -1,5 +1,4 @@
 #!/bin/bash
-set -x
 #dependencies: smrtanalysis >= 5.0, egrep, samtools
 
 CCSBAM=$1
@@ -20,25 +19,29 @@ cd "$ROINAME"
 echo "subsetting CCSBAM for ROI"
 echo "--------------------------------------------------"
 samtools view -b "$CCSBAM" ${CHROM}:${START}-${END} > subset.bam
+samtools index subset.bam
+echo "$CHROM	$START	$END" > subset.bed
 # subset.bam will include all CCS reads within ROI
 
 # We've found that local coverage values between 60X and 120X tend to produce
 # the largest haplotype blocks, so  we downsample if the average coverage is
 # greater than $MAX_COVERAGE.
 awk_mean='{ sum += $5 } END { if (NR > 0) print sum / NR }'
-cov=`bedtools coverage -d -b subset.bam -a <(echo "$CHROM	$START	$END") | \
+cov=`bedtools coverage -nonamecheck -d -b subset.bam -a subset.bed | \
 		awk "$awk_mean" | \
 		cut -d'.' -f1`
-if [ -z "${cov}" ] && [ "${cov}" -gt "${MAX_COVERAGE}" ]
+if [ -z "${cov}" ]
+then
+	echo "no reads mapped to this target region"
+	exit 0
+fi
+if [ "${cov}" -gt "${MAX_COVERAGE}" ]
 then
 	downsample=`echo "${MAX_COVERAGE}/${cov}" | bc -l`
 	echo "original subset.bam has ${cov} mean coverage"
 	echo "downsampling to ~${MAX_COVERAGE}"
 	samtools view -b -s 1${downsample} subset.bam > downsampled.bam
 	mv downsampled.bam subset.bam
-else
-	echo "no reads mapped to this target region"
-	exit 0
 fi
 samtools index subset.bam
 
@@ -89,4 +92,3 @@ for PHASE in 0 1; do
 	# fortunately for the VCF feature set we use here, we can just change the version string
 	sed -i 's/##fileformat=VCFv4.3/##fileformat=VCFv4.2/g' phase.${PHASE}.vcf
 done
-set +x
