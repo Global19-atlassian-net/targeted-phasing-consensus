@@ -1,27 +1,33 @@
-# targeted-phasing.sh
+# `targeted-sequel-phasing`
 -------------------------
-This is a collection of tertiary analysis scripts written to facilitate the phasing and generating haplotype consensus sequences for PacBio target capture data.
+![Phased BIN1 in Alzheimer's disease gDNA sample](images/BIN1_example.png)
+-------------------------
+This is a collection of tertiary analysis scripts written to facilitate phasing and generating haplotype consensus sequences for PacBio target capture data.
 These scripts are not officially supported by Pacific Biosciences.
 
 ## Requirements:
-- smrttools or SMRT Link >= 5.0
+- smrttools or SMRT Link >= 5.0.1
 - `samtools` >= 1.3.1
 - `egrep`, `awk`, `cut`, `xargs`, `sed`
 - optional: `parallel`
 
 ## About:
-SOME KIND OF FILLER TEXT ABOUT THE IMPORTANCE OF PHASING MARKERS.
+Phased sequences provide:
+- Direct evidence of linked mutations
+- Allele-specific profile of SNPs, insertions, deletions, and other structural variations
+- Improved downstream variant interpretation and haplotype calls with allelic resolution
+- Improved assignment of corresponding splice isoforms to specific alleles
 
 ## Installation:
-Clone with git.
+Clone with git.  Ensure that you have all of the dependencies available in your path.
 
 ## Input:
 In order to phase reads using these scripts, you will need:
-- a reference genome: If you have a SMRT Link installation, you can point to the folder containing the .fasta or .fa file.  If not, you will need to download or create a reference and run `samtools faidx /path/to/reference/fasta` to build a genome index.
+- a reference genome: If you have a SMRT Link installation, you can point to the path of the .fasta or .fa file.  If not, you will need to download or create a reference and run [`samtools faidx`](http://www.htslib.org/doc/samtools-1.3.1.html "Samtools Documentation")` /path/to/reference/fasta` to build a genome index.
 - a consolidated<sup id="a1">[1](#f1)</sup> CCS BAM with reads aligned to reference genome:  This can be created with a SMRT Link "CCS Mapping" job.  We have had success with the default settings:
 	- Minimum Number of Passes: 3
 	- Minimum Predicted Accuracy: 0.9
-- an consolidated<sup id="a1">[1]</sup> subreads BAM with reads aligned to reference genome:  This can be created with a SMRT Link "Resequencing" job.  We have had success with the default settings.
+- an consolidated<sup>[1](#f1)</sup> subreads BAM with reads aligned to reference genome:  This can be created with a SMRT Link "Resequencing" job.  We have had success with the default settings.
 - a BED file describing either of the following:
 	- the target regions you wish to phase, or
 	- the positions of the probes.  If you choose this option, `capture2target.py` can be used to generate a target region BED file.
@@ -29,7 +35,7 @@ In order to phase reads using these scripts, you will need:
 
 ## Tutorial:
 ### Phasing a single target region.
-Within a given region of interest, the general workflow of the `targeted-phasing.sh` script is:
+Within a given region of interest, the general workflow of the `targeted-sequel-phasing.sh` script is:
 1. Subset the CCS bam around the region of interest.
 2. Phase the CCS reads in this region using [`samtools phase`](http://www.htslib.org/doc/samtools-1.3.1.html "Samtools Documentation").
 3. Generate a BED file describing the phased haplotype blocks within the region of interest.
@@ -77,6 +83,9 @@ With the included `capture2target.py` and `generate_jobs.py` scripts, you can ph
 # add script folder to path
 cd targeted-phasing-consensus
 export PATH=$PWD:$PATH
+# ensure that samtools and arrow are in your path
+samtools --version  # should report >= 1.3.1
+arrow --version     # should report >= 2.2.0
 
 # create a working directory and change into it, e.g.
 mkdir ~/phased_data
@@ -94,36 +103,42 @@ capture2target.py capture_probes.bed $FRAG_SIZE
 # generate shell scripts to phase each region of interest
 generate_jobs.py ./capture_probes.bed.targets $CCSBAM $SUBREADSBAM $SUBREADSALIGNED $REF
 
-# if running locally without a cluster you can launch all of the jobs from parallel
-# parallel will manage the number of jobs running concurrently if you provide the '-j NUMBER` argument:
-NUM_CORES = 8 # set this to the number of concurrent jobs
-parallel -j $NUM_CORES 'bash {} > {}.out' ::: phase_*.sh
 
-# if running on a cluster, edit QSUB_HEADER in generate_jobs.py with whatever you need, and run:
-parallel 'qsub {}' ::: phase_*.sh
+# CHOOSE ONE OF THE TWO FOLLOWING OPTIONS:
+
+	# 1) if running locally without a cluster you can launch all of the jobs from parallel
+	# parallel will manage the number of jobs running concurrently if you provide the '-j NUMBER` argument:
+	NUM_CORES = 8 # set this to the number of concurrent jobs
+	parallel -j $NUM_CORES 'bash {} > {}.out' ::: phase_*.sh
+
+	# 2) if running on a cluster, edit QSUB_HEADER in generate_jobs.py with whatever you need, and run:
+	parallel 'qsub {}' ::: phase_*.sh
 ```
 
 ## Output:
 # Files and folder organization:
 Within the working directory, there will be a new folder for each target region.  Within each of these folders, there will be:
 - `subset.bam`: reads overlapping the target region<sup id="a2">[2](#f2)</sup>
-- `phase.[01].bam`: phased CCS reads
-- `phase.[01].subreads.bam`: phased subreads
-- `phase.[01].consensus.fasta`: phased consensus fasta
-- `phase.[01].vcf`: phased variant calls
+- `phase.[01].bam`: phased CCS reads<sup id="a3">[3](#f3)</sup>
+- `phase.[01].subreads.bam`: phased subreads<sup>[3](#f3)</sup>
+- `phase.[01].consensus.fasta`: phased consensus fasta<sup>[3](#f3)</sup>
+- `phase.[01].vcf`: phased variant calls<sup>[3](#f3)</sup>
 - `phase.out`: output of `samtools phase`, which describes the phase blocks, markers, and supporting reads
 - `phase.bed`: BED file created using `phase.out`; can be loaded into IGV to graphically display phased regions and markers
 
-# Visualization of phased CCS reads and haplotype blocks:
-We view the output using [IGV 2.4 beta](http://software.broadinstitute.org/software/igv/igv2.4beta) from [Broad Institute](https://www.broadinstitute.org/).
+## Visualization of phased CCS reads and haplotype blocks:
+We view the output using [IGV 2.4 beta](http://software.broadinstitute.org/software/igv/igv2.4beta) from [Broad Institute](https://www.broadinstitute.org/).<sup id="a4">[4](#f4)</sup>
 - Ensure that you pick the same reference genome used for alignment.
-- File -> Load from File... -> Choose phase.0.bam, phase.1.bam, and phase.bed
+- File -> Load from File... -> Choose `phase.0.bam`, `phase.1.bam`, and `phase.bed`
 ![Visualizaton Example](images/FERMT2_example.png)
 
-
-
+## Possible improvements:
+- accept dataset (.xml) input in place of consolidated BAM
+- trim BAM, consensus FASTA, and SNP VCF files to phased regions
+- call structural variants on phased BAM and produce phased SV VCFs
 
 ## Notes:
 - <b id="f1">1</b> If you start with a dataset spread over multiple BAM files, you can consolidate these using the [`dataset consolidate`](http://www.pacb.com/wp-content/uploads/SMRT-Tools-Reference-Guide-v4.0.0.pdf) command.[↩](#a1)
 - <b id="f2">2</b> We have found that local coverage values between 60x and 120x tend to produce the largest haplotype blocks, so we downsample if the average coverage is greater than `$MAX_COVERAGE` in `targeted-sequel-phasing.sh`.  By default, `MAX_COVERAGE=120`.[↩](#a2)
 - <b id="f3">3</b> `phase.0` and `phase.1` are arbitrary naming assignments, and since a given target region may contain multiple phased haplotype blocks which may not be linked to each other, you should take care when interpreting the data.[↩](#a3)
+- <b id="f4">4</b> For suggested alignment view settings, refer to Figure 1 and Figure 2 in [this blog post](http://www.pacb.com/blog/igv-3-improves-support-pacbio-long-reads/).[↩](#a4)
