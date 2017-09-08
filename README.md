@@ -8,6 +8,7 @@ These scripts are not officially supported by Pacific Biosciences.
 ## Requirements:
 - smrttools or SMRT Link >= 5.0.1
 - `samtools` >= 1.3.1
+- `bedtools` >= 2.25
 - `egrep`, `awk`, `cut`, `xargs`, `sed`
 - optional: `parallel`<sup id="a1">[1](#f1)</sup>
 
