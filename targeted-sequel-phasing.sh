@@ -25,17 +25,20 @@ samtools view -b "$CCSBAM" ${CHROM}:${START}-${END} > subset.bam
 # We've found that local coverage values between 60X and 120X tend to produce
 # the largest haplotype blocks, so  we downsample if the average coverage is
 # greater than $MAX_COVERAGE.
-awk_mean='{a+=$5} END{print a/NR}'
+awk_mean='{ sum += $5 } END { if (NR > 0) print sum / NR }'
 cov=`bedtools coverage -d -b subset.bam -a <(echo "$CHROM	$START	$END") | \
 		awk "$awk_mean" | \
 		cut -d'.' -f1`
-if [ ${cov} -gt ${MAX_COVERAGE} ]
+if [ -z "${cov}" ] && [ "${cov}" -gt "${MAX_COVERAGE}" ]
 then
 	downsample=`echo "${MAX_COVERAGE}/${cov}" | bc -l`
 	echo "original subset.bam has ${cov} mean coverage"
 	echo "downsampling to ~${MAX_COVERAGE}"
 	samtools view -b -s 1${downsample} subset.bam > downsampled.bam
 	mv downsampled.bam subset.bam
+else
+	echo "no reads mapped to this target region"
+	exit 0
 fi
 samtools index subset.bam
 
