@@ -102,7 +102,7 @@ FRAG_SIZE=6000                          # determined by mean fragment size durin
 capture2target.py capture_probes.bed $FRAG_SIZE
 
 # generate shell scripts to phase each region of interest
-generate_jobs.py ./capture_probes.bed.targets $CCSBAM $SUBREADSBAM $REF
+generate_jobs.py ./capture_probes.bed.targets $CCSBAM $SUBREADSBAM $REFERENCE
 
 
 # CHOOSE ONE OF THE TWO FOLLOWING OPTIONS:
