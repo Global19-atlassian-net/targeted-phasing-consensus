@@ -11,12 +11,15 @@ REF=$7
 
 MAX_COVERAGE=120  # maximum local coverage
 
-echo "creating directory ROINAME to store output"
+echo "phasing $ROINAME on $CHROM from $START to $END"
+echo "--------------------------------------------------"
+
+echo "creating directory $ROINAME to store output"
 echo "--------------------------------------------------"
 mkdir "$ROINAME"
 cd "$ROINAME"
 
-echo "subsetting CCSBAM for ROI"
+echo "subsetting $CCSBAM"
 echo "--------------------------------------------------"
 samtools view -b "$CCSBAM" ${CHROM}:${START}-${END} > subset.bam
 samtools index subset.bam
@@ -46,7 +49,7 @@ then
 fi
 samtools index subset.bam
 
-echo "phasing CCSBAM around ROI"
+echo "phasing subset.bam around ROI"
 echo "--------------------------------------------------"
 samtools calmd -AEur subset.bam "${REF}" | \
 	samtools phase -b phase - > phase.out
@@ -85,7 +88,7 @@ for PHASE in 0 1; do
 
 	echo "calling variants for phase ${PHASE}"
 	echo "--------------------------------------------------"
-	# phase.${PHASE}.consensus.fasta and phase.${PHASE}.consensus.gff are produced
+	# phase.${PHASE}.consensus.fasta and phase.${PHASE}.vcf are produced
 	pbindex phase.${PHASE}.subreads.bam
 	arrow -r "${REF}" -o phase.${PHASE}.consensus.fasta -o phase.${PHASE}.vcf --referenceWindow ${CHROM}:${START}-${END} phase.${PHASE}.subreads.bam
 
