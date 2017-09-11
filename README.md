@@ -1,4 +1,4 @@
-# `targeted-sequel-phasing`
+# `targeted-phasing-consensus`
 -------------------------
 ![Phased BIN1 in Alzheimer's disease gDNA sample](images/BIN1_example.png)
 -------------------------
@@ -104,6 +104,7 @@ REFERENCE=/path/to/reference/fasta      # with indices
 FRAG_SIZE=6000                          # determined by mean fragment size during prep; 2kbp to 6kbp recommended
 
 # produce a BED file named capture_probes.bed.targets with the target regions of interest
+# capture_probes.bed, a list of your probe locations, needs to be in your working directory (e.g. ~/phased_data)
 capture2target.py capture_probes.bed $FRAG_SIZE
 
 # generate shell scripts to phase each region of interest
