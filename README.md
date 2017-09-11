@@ -24,11 +24,11 @@ Clone with git.  Ensure that you have all of the dependencies available in your 
 
 ## Input:
 In order to phase reads using these scripts, you will need:
-- a reference genome: If you have a SMRT Link installation, you can point to the path of the .fasta or .fa file.  If not, you will need to download or create a reference and run [`samtools faidx`](http://www.htslib.org/doc/samtools-1.3.1.html "Samtools Documentation")` /path/to/reference/fasta` to build a genome index.
+- a reference genome: If you have a SMRT Link installation, you can point to the path of the `.fasta` or `.fa` file.  If not, you will need to download or create a reference and run [`samtools faidx`](http://www.htslib.org/doc/samtools-1.3.1.html "Samtools Documentation")` /path/to/reference/fasta` to build a genome index.
 - a consolidated<sup id="a2">[2](#f2)</sup> CCS BAM with reads aligned to reference genome:  This can be created with a SMRT Link "CCS Mapping" job.  We have had success with the default settings:
     - Minimum Number of Passes: 3
     - Minimum Predicted Accuracy: 0.9
-- an consolidated<sup>[2](#f2)</sup> subreads BAM with reads aligned to reference genome:  This can be created with a SMRT Link "Resequencing" job.  We have had success with the default settings.
+- a consolidated<sup>[2](#f2)</sup> subreads BAM with reads aligned to reference genome:  This can be created with a SMRT Link "Resequencing" job.  We have had success with the default settings.
 - a BED file describing either of the following:
     - the target regions you wish to phase, or
     - the positions of the probes.  If you choose this option, `capture2target.py` can be used to generate a target region BED file.
@@ -77,7 +77,7 @@ With the included `capture2target.py` and `generate_jobs.py` scripts, you can ph
 1. Generate a BED file of target regions that you would like to phase by either:
     1. manually creating a tab-delimited BED file containing:
         - column 1: chromosome for region of interest (ex. `chr1`)
-        - column 2: starting position for region of interest(ex. `127042513`)
+        - column 2: starting position for region of interest (ex. `127042513`)
         - column 3: ending position for region of interest (ex. `127113327`)
         - column 4: region name, without any spaces or punctuation other than underscores and dashes (ex. `BIN1`)
     2. passing your probe set BED file through the included `capture2target.py` script.  This will join probes that are separated by fewer bases than twice the fragment size, and add a buffer to the end of each region to capture all of the reads mapping to the region.
@@ -121,8 +121,8 @@ generate_jobs.py ./capture_probes.bed.targets $CCSBAM $SUBREADSBAM $REFERENCE
     parallel 'qsub {}' ::: phase_*.sh
 ```
 
-## Output:
-# Files and folder organization:
+# Output:
+## Files and folder organization:
 Within the working directory, there will be a new folder for each target region.  Within each of these folders, there will be:
 - `subset.bam`: reads overlapping the target region<sup id="a3">[3](#f3)</sup>
 - `phase.[01].bam`: phased CCS reads<sup id="a4">[4](#f4)</sup>
@@ -138,14 +138,9 @@ We view the output using [IGV 2.4 beta](http://software.broadinstitute.org/softw
 - File -> Load from File... -> Choose `phase.0.bam`, `phase.1.bam`, and `phase.bed`
 ![Visualizaton Example](images/FERMT2_example.png)
 
-## Possible improvements:
-- accept dataset (.xml) input in place of consolidated BAM
-- trim BAM, consensus FASTA, and SNP VCF files to phased regions
-- call structural variants on phased BAM and produce phased SV VCFs
-
-## Notes:
+# Notes:
 - <b id="f1">1</b> [GNU parallel](https://www.gnu.org/software/parallel/) is a great tool to simplify your workflow.  Refer to the [man page](https://www.gnu.org/software/parallel/man.html) for more information.[↩](#a1)
 - <b id="f2">2</b> If you start with a dataset spread over multiple BAM files, you can consolidate these using the [`dataset consolidate`](http://www.pacb.com/wp-content/uploads/SMRT-Tools-Reference-Guide-v4.0.0.pdf) command.[↩](#a2)
-- <b id="f3">3</b> We have found that local coverage values between 60x and 120x tend to produce the largest haplotype blocks, so the script downsamples if the average coverage is greater than `$MAX_COVERAGE` in `targeted-sequel-phasing.sh`.  By default, `MAX_COVERAGE=120`.[↩](#a3)
+- <b id="f3">3</b> We have found that local coverage values between 60x and 120x tend to produce the largest haplotype blocks, so if the average coverage is greater than `$MAX_COVERAGE`, the `targeted-sequel-phasing.sh` script downsamples using `samtools view -s` with a random seed of `1`.  By default, `MAX_COVERAGE=120`.[↩](#a3)
 - <b id="f4">4</b> `phase.0` and `phase.1` are arbitrary naming assignments, and since a given target region may contain multiple phased haplotype blocks which may not be linked to each other, you should take care when interpreting the data.[↩](#a4)
 - <b id="f5">5</b> For suggested alignment view settings, refer to Figure 1 and Figure 2 in [this blog post](http://www.pacb.com/blog/igv-3-improves-support-pacbio-long-reads/).[↩](#a5)
