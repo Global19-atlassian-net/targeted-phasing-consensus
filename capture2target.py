@@ -35,7 +35,7 @@ def main():
 
     with open(capture_bed, 'r') as capture_list:
         capture_reader = csv.reader(capture_list, delimiter='\t')
-        all_rows = [[w, int(x), int(y), z] for w, x, y, z in capture_reader]
+        all_rows = [[row[0], int(row[1]), int(row[2]), row[3]] for row in capture_reader]
         all_rows = sorted(all_rows, key=itemgetter(0, 1))
         for row in all_rows:
             (chrom, start, end, etc) = row
