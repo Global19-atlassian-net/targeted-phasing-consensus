@@ -15,7 +15,7 @@ import sys
 import os.path
 from datetime import datetime
 
-SCRIPT = 'targeted-sequel-phasing.sh'
+SCRIPT = 'targeted-phasing-consensus.sh'
 HEADER = "#!/bin/bash\n"
 
 # The following variables can be edited if you intend to submit these jobs to
@@ -70,7 +70,7 @@ def main():
                 shellfile.write(HEADER)
                 if CLUSTER:
                     shellfile.write(CLUSTER_HEADER)
-                # targeted-sequel-phasing.sh CCSBAM SUBREADSBAM ROINAME CHROM START END REFERENCE
+                # targeted-phasing-consensus.sh CCSBAM SUBREADSBAM ROINAME CHROM START END REFERENCE
                 shellfile.write(' '.join([SCRIPT, CCSBAM, SUBREADSBAM,
                                           name, chrom, start, end,
                                           REF]))

@@ -1,4 +1,4 @@
-# `targeted-phasing-consensus`
+# `Phasing Consensus Analysis for Targeted Sequencing Data`
 -------------------------
 ![Phased BIN1 in Alzheimer's disease gDNA sample](images/BIN1_example.png)
 -------------------------
@@ -36,7 +36,7 @@ In order to phase reads using these scripts, you will need:
 
 ## Tutorial:
 ### Phasing a single target region.
-Within a given region of interest, the general workflow of the `targeted-sequel-phasing.sh` script is:
+Within a given region of interest, the general workflow of the `targeted-phasing-consensus.sh` script is:
 1. Subset the CCS bam around the region of interest.
 2. Phase the CCS reads in this region using [`samtools phase`](http://www.htslib.org/doc/samtools-1.3.1.html "Samtools Documentation").
 3. Generate a BED file describing the phased haplotype blocks within the region of interest.
@@ -69,7 +69,7 @@ START=127042513
 END=127113327
 
 # run the phasing script, passing the necessary arguments
-targeted-sequel-phasing.sh $CCSBAM $SUBREADSBAM $ROINAME $CHROM $START $END $REFERENCE
+targeted-phasing-consensus.sh $CCSBAM $SUBREADSBAM $ROINAME $CHROM $START $END $REFERENCE
 ```
 
 ### Phasing multiple target regions.
@@ -142,6 +142,6 @@ We view the output using [IGV 2.4 beta](http://software.broadinstitute.org/softw
 # Notes:
 - <b id="f1">1</b> [GNU parallel](https://www.gnu.org/software/parallel/) is a great tool to simplify your workflow.  Refer to the [man page](https://www.gnu.org/software/parallel/man.html) for more information.[↩](#a1)
 - <b id="f2">2</b> If you start with a dataset spread over multiple BAM files, you can consolidate these using the [`dataset consolidate`](http://www.pacb.com/wp-content/uploads/SMRT-Tools-Reference-Guide-v4.0.0.pdf) command.[↩](#a2)
-- <b id="f3">3</b> We have found that local coverage values between 60x and 120x tend to produce the largest haplotype blocks (for fragments ~6kb over ROIs determined by `capture2target.py`), so if the average coverage is greater than `$MAX_COVERAGE`, the `targeted-sequel-phasing.sh` script downsamples using `samtools view -s` with a random seed of `1`.  By default, `MAX_COVERAGE=120`.[↩](#a3)
+- <b id="f3">3</b> We have found that local coverage values between 60x and 120x tend to produce the largest haplotype blocks (for fragments ~6kb over ROIs determined by `capture2target.py`), so if the average coverage is greater than `$MAX_COVERAGE`, the `targeted-phasing-consensus.sh` script downsamples using `samtools view -s` with a random seed of `1`.  By default, `MAX_COVERAGE=120`.[↩](#a3)
 - <b id="f4">4</b> `phase.0` and `phase.1` are arbitrary naming assignments, and since a given target region may contain multiple phased haplotype blocks which may not be linked to each other, you should take care when interpreting the data.[↩](#a4)
 - <b id="f5">5</b> For suggested alignment view settings, refer to Figure 1 and Figure 2 in [this blog post](http://www.pacb.com/blog/igv-3-improves-support-pacbio-long-reads/).[↩](#a5)
