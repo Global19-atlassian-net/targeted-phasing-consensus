@@ -23,7 +23,8 @@ Phased sequences provide:
 - Improved assignment of corresponding splice isoforms to specific alleles
 
 ## Installation:
-Clone with git.  Ensure that you have all of the dependencies available in your path.
+1. Ensure that you have all of the dependencies available in your path.
+2. `git clone https://github.com/PacificBiosciences/targeted-phasing-consensus.git`
 
 ## Input:
 In order to phase reads using these scripts, you will need:
