@@ -17,7 +17,7 @@ echo "--------------------------------------------------"
 echo "creating directory $ROINAME to store output"
 echo "--------------------------------------------------"
 mkdir "$ROINAME"
-cd "$ROINAME"
+cd "$ROINAME" || exit
 
 echo "subsetting $CCSBAM"
 echo "--------------------------------------------------"
@@ -29,10 +29,8 @@ echo "$CHROM	$START	$END" > subset.bed
 # We've found that local coverage values between 60X and 120X tend to produce
 # the largest haplotype blocks, so  we downsample if the average coverage is
 # greater than $MAX_COVERAGE.
-awk_mean='{ sum += $5 } END { if (NR > 0) print sum / NR }'
-cov=`bedtools coverage -nonamecheck -d -b subset.bam -a subset.bed | \
-		awk "$awk_mean" | \
-		cut -d'.' -f1`
+cov=`bedtools coverage -nonamecheck -mean -b subset.bam -a subset.bed | \
+		cut -f5 | cut -d'.' -f1`
 if [ -z "${cov}" ]
 then
 	echo "no reads mapped to this target region"
@@ -66,8 +64,6 @@ for PHASE in 0 1; do
 	# prefix = m54026_161028_224529/4260379
 	echo "generating a list of subreads corresponding to phase ${PHASE}"
 	echo "--------------------------------------------------"
-	# retain headers in whitelist
-	echo "^@" > whitelist.${PHASE}.txt
 	# create whitelist of reads
 	samtools view phase.${PHASE}.bam | \
 		# print line
@@ -82,15 +78,20 @@ for PHASE in 0 1; do
 
 	echo "filtering reads corresponding to phase ${PHASE}"
 	echo "--------------------------------------------------"
-	samtools view -h "${SUBREADSBAM}" | \
+	# extract header
+	samtools view -H "${SUBREADSBAM}" > header.sam
+	samtools view "${SUBREADSBAM}" ${CHROM}:${START}-${END} | \
 		egrep -f whitelist.${PHASE}.txt | \
-		samtools view -bS - > phase.${PHASE}.subreads.bam
+		samtools view -bS - > phase.${PHASE}.subreads.noheader.bam
+	samtools reheader header.sam phase.${PHASE}.subreads.noheader.bam > phase.${PHASE}.subreads.bam
+	rm phase.${PHASE}.subreads.noheader.bam
 
 	echo "calling variants for phase ${PHASE}"
 	echo "--------------------------------------------------"
 	# phase.${PHASE}.consensus.fasta and phase.${PHASE}.vcf are produced
 	pbindex phase.${PHASE}.subreads.bam
-	arrow -r "${REF}" -o phase.${PHASE}.consensus.fasta -o phase.${PHASE}.vcf --referenceWindow ${CHROM}:${START}-${END} phase.${PHASE}.subreads.bam
+	arrow -r "${REF}" -o phase.${PHASE}.consensus.fasta -o phase.${PHASE}.vcf \
+		--referenceWindow ${CHROM}:${START}-${END} phase.${PHASE}.subreads.bam
 
 	# arrow VCF files are v4.3, but IGV can only handle <=v4.2...
 	# fortunately for the VCF feature set we use here, we can just change the version string
