@@ -30,7 +30,7 @@ echo "$CHROM	$START	$END" > subset.bed
 # the largest haplotype blocks, so  we downsample if the average coverage is
 # greater than $MAX_COVERAGE.
 cov=`bedtools coverage -nonamecheck -mean -b subset.bam -a subset.bed | \
-		cut -f5 | cut -d'.' -f1`
+		cut -f4 | cut -d'.' -f1`
 if [ -z "${cov}" ]
 then
 	echo "no reads mapped to this target region"
@@ -66,8 +66,6 @@ for PHASE in 0 1; do
 	echo "--------------------------------------------------"
 	# create whitelist of reads
 	samtools view phase.${PHASE}.bam | \
-		# print line
-		awk '{ print $1 }' | \
 		# cut the first field (read name)
 		cut -f1 | \
 		# cut the first two parts of the field name (movie and zmw)
@@ -82,9 +80,8 @@ for PHASE in 0 1; do
 	samtools view -H "${SUBREADSBAM}" > header.sam
 	samtools view "${SUBREADSBAM}" ${CHROM}:${START}-${END} | \
 		egrep -f whitelist.${PHASE}.txt | \
-		samtools view -bS - > phase.${PHASE}.subreads.noheader.bam
-	samtools reheader header.sam phase.${PHASE}.subreads.noheader.bam > phase.${PHASE}.subreads.bam
-	rm phase.${PHASE}.subreads.noheader.bam
+		cat header.sam - | \
+		samtools view -bS - > phase.${PHASE}.subreads.bam
 
 	echo "calling variants for phase ${PHASE}"
 	echo "--------------------------------------------------"
